@@ -14,21 +14,21 @@ const AdminModule: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-indigo-700 p-4 shadow-md">
+      <nav className="p-4 shadow-md">
         <div className="container mx-auto flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-white">Admin Panel</h2>
+          <h2 className="text-2xl font-bold text-[#ff5757]">Admin Panel</h2>
           <div className="flex space-x-4">
             <button
               onClick={() => setCurrentPage('dashboard')}
-              className={`px-4 py-2 rounded-md text-white font-medium ${currentPage === 'dashboard' ? 'bg-indigo-900' : 'hover:bg-indigo-600'}`}
+              className={`px-4 py-2 rounded-md text-white font-medium ${currentPage === 'dashboard' ? 'ring-2 ring-red-600' : 'hover:ring-2 hover:ring-red-400'}`}
             >
-              Dashboard
+              <span style={{ color: '#ff5757' }}>Dashboard</span>
             </button>
             <button
               onClick={() => setCurrentPage('manageRestaurant')}
-              className={`px-4 py-2 rounded-md text-white font-medium ${currentPage === 'manageRestaurant' ? 'bg-indigo-900' : 'hover:bg-indigo-600'}`}
+              className={`px-4 py-2 rounded-md text-white font-medium ${currentPage === 'manageRestaurant' ? 'ring-2 ring-red-600' : 'hover:ring-2 hover:ring-red-400'}`}
             >
-              Manage Restaurant
+              <span style={{ color: '#ff5757' }}>Manage Restaurant</span>
             </button>
             <button
               onClick={logout}
@@ -36,7 +36,7 @@ const AdminModule: React.FC = () => {
             >
               Logout
             </button>
-          </div>
+            </div>
         </div>
       </nav>
 

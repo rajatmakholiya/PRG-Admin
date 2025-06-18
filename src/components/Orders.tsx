@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext'; // Adjust path
-import { simulateFetchOrdersApi } from '@/api/SimulateApi';
+import { simulateFetchOrdersApi } from '@/app/api/SimulateApi';
 import { Order } from '@/types';
 
 const OrdersPage: React.FC = () => {

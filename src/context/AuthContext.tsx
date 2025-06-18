@@ -1,7 +1,7 @@
 // src/context/AuthContext.tsx
 "use client"
 
-import { simulateLoginApi } from '@/api/SimulateApi';
+import { simulateLoginApi } from '@/app/api/SimulateApi';
 import React, { createContext, useContext, useState } from 'react';
 
 type UserRole = 'restaurant' | 'admin' | null;

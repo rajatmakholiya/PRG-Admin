@@ -35,6 +35,7 @@ const MenuItemSchema: Schema<IMenuItem> = new Schema(
   },
   {
     timestamps: true, // Adds createdAt and updatedAt automatically
+    collection: 'ItemList', // Explicitly set the collection name
   }
 );
 

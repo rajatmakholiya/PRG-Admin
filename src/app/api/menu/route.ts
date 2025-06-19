@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error("Error adding menu item:", error);
     if (error.name === 'ValidationError') {
-      const errors = Object.values(error.errors).map((err: any) => err.message);
+      const errors = Object.values(error.errors).map((err:any) => err.message);
       return NextResponse.json({ success: false, error: errors.join(', ') }, { status: 400 });
     }
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';

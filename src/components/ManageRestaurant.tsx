@@ -1,5 +1,6 @@
 // src/components/ManageRestaurant.tsx
 "use client"
+import MenuItemSkeleton from './Loading/MenuItemSkeleton';
 
 import React, { useEffect, useState } from 'react';
 
@@ -30,6 +31,7 @@ const ManageRestaurant: React.FC = () => {
   const [modalError, setModalError] = useState<string | null>(null);
   const [newItemImageFile, setNewItemImageFile] = useState<File | null>(null);
   const [newItemImagePreview, setNewItemImagePreview] = useState<string | null>(null);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
 
 
   useEffect(() => {
@@ -184,46 +186,105 @@ const ManageRestaurant: React.FC = () => {
     }
   };
 
-  if (isLoading) {
-    return <div className="text-center p-8">Loading menu items...</div>;
-  }
+  const handleDeleteItem = async (itemId: string) => {
+    if (!confirm('Are you sure you want to delete this item?')) {
+      return;
+    }
+    setDeletingItemId(itemId);
+    setError(null); // Clear general errors
 
-  if (error) {
-    return <div className="text-center p-8 text-red-500">Error: {error}</div>;
-  }
+    try {
+      const response = await fetch(`/api/menu/${itemId}`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || `HTTP error! status: ${response.status}`);
+      }
+
+      setMenuItems(prevItems => prevItems.filter(item => item._id !== itemId));
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(`Failed to delete item: ${err.message}`);
+      } else {
+        setError('An unknown error occurred while deleting the item.');
+      }
+      console.error("Failed to delete menu item:", err);
+    } finally {
+      setDeletingItemId(null);
+    }
+  };
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-4xl font-extrabold text-gray-900">Manage Menu Items</h1>
-        <button
-          className="hover:ring-2 hover:ring-red-400 text-[#ff5757] font-bold py-2 px-4 rounded-md"
-          onClick={openModal}
-        >
-          Add New Item
-        </button>
+    <div className="flex flex-col h-full bg-gray-50"> {/* Use h-full if parent controls height, or h-screen for viewport height */}
+      {/* Header Section - Non-scrollable */}
+      <div className="px-8 pt-8">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-4xl font-extrabold text-gray-900">Manage Menu Items</h1>
+          <button
+            className="hover:ring-2 hover:ring-red-400 text-[#ff5757] font-bold py-2 px-4 rounded-md"
+            onClick={openModal}
+          >
+            Add New Item
+          </button>
+        </div>
       </div>
 
-      {menuItems.length === 0 ? (
-        <div className="bg-white p-6 rounded-lg shadow-md text-center text-gray-500">
-          No menu items found. Click &quot;Add New Item&quot; to get started!
-        </div>
-      ) : (
-        <ul className="space-y-4">
-          {menuItems.map((item) => (
-            <li key={item._id} className="bg-white shadow-md rounded-lg p-6 border border-gray-200">
-              {item.imageUrl && <img src={item.imageUrl} alt={item.name} className="w-full h-48 object-cover rounded-md mb-4" />}
-              <h2 className="text-2xl font-semibold text-gray-800 mb-1">{item.name}</h2>
-              <p className="text-gray-600 mb-2">{item.description}</p>
-              <p className="text-lg font-bold text-green-600 mb-3">Price: ${item.price.toFixed(2)}</p>
-              <div className="text-xs text-gray-400">
-                <p>Added: {new Date(item.createdAt).toLocaleDateString()} | Updated: {new Date(item.updatedAt).toLocaleDateString()}</p>
-              </div>
-              {/* Add Edit/Delete buttons here if needed */}
-            </li>
-          ))}
-        </ul>
-      )}
+      {/* Scrollable Content Section */}
+      <div className="px-8 pb-8 pt-2"> {/* Removed flex-grow and overflow-y-auto */}
+        {error && (
+          <div className="text-center p-8 text-red-500 bg-red-100 border border-red-300 rounded-md">
+            Error: {error}
+          </div>
+        )}
+
+        {!error && isLoading && (
+          <ul className="space-y-4 max-h-[60vh] overflow-y-auto"> {/* Make only the list scrollable */}
+            {[...Array(3)].map((_, index) => (
+              <MenuItemSkeleton key={index} />
+            ))}
+          </ul>
+        )}
+
+        {!error && !isLoading && menuItems.length === 0 && (
+            <div className="bg-white p-6 rounded-lg shadow-md text-center text-gray-500">
+              No menu items found. Click &quot;Add New Item&quot; to get started!
+            </div>
+          )}
+
+        {!error && !isLoading && menuItems.length > 0 && (
+            <ul className="space-y-4 max-h-[60vh] overflow-y-auto"> {/* Make only the list scrollable */}
+              {menuItems.map((item) => (
+                <li key={item._id} className="bg-white shadow-lg rounded-lg p-6 border border-gray-200 flex flex-col">
+                  {item.imageUrl && <img src={item.imageUrl} alt={item.name} className="w-full h-48 object-cover rounded-md mb-4 self-center max-w-md" />}
+                  <div className="flex-grow">
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-3">
+                      <div className="flex-grow">
+                        <h2 className="text-2xl font-semibold text-gray-800 mb-1">{item.name}</h2>
+                        <p className="text-gray-600 text-sm mb-2">{item.description}</p>
+                      </div>
+                      <p className="text-lg font-bold text-green-600 md:text-xl whitespace-nowrap">Price: ${item.price.toFixed(2)}</p>
+                    </div>
+                  </div>
+                  {/* Date and Delete button row */}
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-xs text-gray-400 mt-auto pt-2 border-t border-gray-100">
+                    <p>Added: {new Date(item.createdAt).toLocaleDateString()} | Updated: {new Date(item.updatedAt).toLocaleDateString()}</p>
+                  
+                  <button
+                    onClick={() => handleDeleteItem(item._id)}
+                    disabled={deletingItemId === item._id}
+                    className="bg-red-500 hover:bg-red-700 text-white text-sm font-bold py-1 px-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed mt-2 sm:mt-0"
+                  >
+                    {deletingItemId === item._id ? 'Deleting...' : 'Delete'}
+                  </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+        )}
+      </div>
 
       {/* Add Item Modal */}
       {isModalOpen && (

@@ -13,8 +13,8 @@ const AdminModule: React.FC = () => {
   const { logout } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="p-4 shadow-md">
+    <div className="flex flex-col h-screen bg-gray-50"> {/* Use h-screen here */}
+      <nav className="p-4 shadow-md flex-shrink-0">
         <div className="container mx-auto flex justify-between items-center">
           <h2 className="text-2xl font-bold text-[#ff5757]">Admin Panel</h2>
           <div className="flex space-x-4">
@@ -32,7 +32,7 @@ const AdminModule: React.FC = () => {
             </button>
             <button
               onClick={logout}
-              className="px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out"
+              className="px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:bg-red-800 transition duration-150 ease-in-out"
             >
               Logout
             </button>
@@ -40,7 +40,8 @@ const AdminModule: React.FC = () => {
         </div>
       </nav>
 
-      <div className="container mx-auto mt-4">
+      {/* This container should fill the rest of the screen and not scroll */}
+      <div className="container mx-auto flex-1 flex flex-col"> {/* Use flex-1 and min-h-0 */}
         {currentPage === 'dashboard' && <AdminDashboard />}
         {currentPage === 'manageRestaurant' && <ManageRestaurant />}
       </div>

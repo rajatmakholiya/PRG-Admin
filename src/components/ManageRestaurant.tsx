@@ -115,17 +115,10 @@ const ManageRestaurant: React.FC = () => {
       setNewItemImagePreview(null);
     }
   };
-  const handleAddItemSubmit = async (e: React.FormEvent) => {
+const handleAddItemSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setModalError(null);
     setIsSubmitting(true);
-
-    const priceNumber = parseFloat(newItemPrice);
-    if (isNaN(priceNumber) || priceNumber < 0) {
-      setModalError('Price must be a valid non-negative number.');
-      setIsSubmitting(false);
-      return;
-    }
 
     if (!newItemImageFile) {
       setModalError('Image is required.');
@@ -133,37 +126,19 @@ const ManageRestaurant: React.FC = () => {
       return;
     }
 
-    let imageBase64Data: string | undefined = undefined;
-    if (newItemImageFile) {
-      imageBase64Data = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(newItemImageFile);
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = error => reject(error);
-      });
-    }
+    // Create a FormData object to send the file and other data
+    const formData = new FormData();
+    formData.append('name', newItemName);
+    formData.append('description', newItemDescription);
+    formData.append('price', newItemPrice);
+    formData.append('imageFile', newItemImageFile); // Append the actual file
 
     try {
-      interface NewMenuItemPayload {
-        name: string;
-        description: string;
-        price: number;
-        imageBase64Data?: string;
-      }
-
-      const payload: NewMenuItemPayload = {
-        name: newItemName,
-        description: newItemDescription,
-        price: priceNumber,
-      };
-      if (imageBase64Data) {
-        payload.imageBase64Data = imageBase64Data;
-      }
-
       const response = await fetch('/api/menu', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        // DO NOT set 'Content-Type': 'application/json'.
+        // The browser will automatically set the correct 'multipart/form-data' header.
+        body: formData,
       });
 
       const result = await response.json();
@@ -172,7 +147,8 @@ const ManageRestaurant: React.FC = () => {
         throw new Error(result.error || `HTTP error! status: ${response.status}`);
       }
 
-      setMenuItems(prevItems => [result.data, ...prevItems]); // Add new item to the top
+      // Optimistically add the new item returned from the API to our state
+      setMenuItems(prevItems => [result.data, ...prevItems]);
       closeModal();
     } catch (err) {
       if (err instanceof Error) {
@@ -258,14 +234,13 @@ const ManageRestaurant: React.FC = () => {
             <ul className="space-y-4 max-h-[60vh] overflow-y-auto"> {/* Make only the list scrollable */}
               {menuItems.map((item) => (
                 <li key={item._id} className="bg-white shadow-lg rounded-lg p-6 border border-gray-200 flex flex-col">
-                  {item.imageUrl && <img src={item.imageUrl} alt={item.name} className="w-full h-48 object-cover rounded-md mb-4 self-center max-w-md" />}
                   <div className="flex-grow">
                     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-3">
                       <div className="flex-grow">
                         <h2 className="text-2xl font-semibold text-gray-800 mb-1">{item.name}</h2>
                         <p className="text-gray-600 text-sm mb-2">{item.description}</p>
                       </div>
-                      <p className="text-lg font-bold text-green-600 md:text-xl whitespace-nowrap">Price: ${item.price.toFixed(2)}</p>
+                      <p className="text-lg font-bold text-green-600 md:text-xl whitespace-nowrap">Price: ₹{item.price.toFixed(2)}</p>
                     </div>
                   </div>
                   {/* Date and Delete button row */}

@@ -41,7 +41,7 @@ const AdminModule: React.FC = () => {
       </nav>
 
       {/* This container should fill the rest of the screen and not scroll */}
-      <div className="container mx-auto flex-1 flex flex-col"> {/* Use flex-1 and min-h-0 */}
+      <div className="container mx-auto flex-1 flex flex-col overflow-y-auto"> {/* Use flex-1 and min-h-0 */}
         {currentPage === 'dashboard' && <AdminDashboard />}
         {currentPage === 'manageRestaurant' && <ManageRestaurant />}
       </div>

@@ -1,4 +1,3 @@
-// src/components/LoginPage.tsx
 "use client"
 
 import { useAuth } from '@/context/AuthContext';

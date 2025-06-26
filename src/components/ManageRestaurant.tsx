@@ -1,19 +1,15 @@
-// src/components/ManageRestaurant.tsx
 "use client"
 import MenuItemSkeleton from './Loading/MenuItemSkeleton';
 
 import React, { useEffect, useState } from 'react';
 
-// It's good practice to define or import the type for your data.
-// You can import IMenuItem from '@/models/MenuItem' if your setup allows sharing types
-// between frontend and backend easily. For simplicity here, I'll redefine a client-side version.
 interface MenuItem {
-  _id: string; // MongoDB typically adds _id
+  _id: string;
   name: string;
   description: string;
   price: number;
   imageUrl?: string;
-  createdAt: string; // Dates will likely be strings after JSON serialization
+  createdAt: string;
   updatedAt: string;
 }
 
@@ -22,7 +18,6 @@ const ManageRestaurant: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // State for the "Add Item" modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newItemName, setNewItemName] = useState('');
   const [newItemDescription, setNewItemDescription] = useState('');
@@ -39,26 +34,19 @@ const ManageRestaurant: React.FC = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch('/api/menu'); // Your API endpoint
+        const response = await fetch('/api/menu');
 
         if (!response.ok) {
-          // Read the body as text first, regardless of content type
           const errorText = await response.text();
           let errorResponseMessage = `HTTP error! status: ${response.status}. Response: ${errorText.substring(0,150)}...`;
           try {
-            // Now, try to parse the text as JSON
             const errorData = JSON.parse(errorText);
             errorResponseMessage = errorData.error || errorResponseMessage;
           } catch (err) {
-            // Parsing as JSON failed, use the text content or a generic message
-            // errorResponseMessage is already set with the text content
-            console.error("Failed to parse error response as JSON:", err);
           }
           throw new Error(errorResponseMessage);
         }
 
-        // For a successful response (response.ok is true), try to parse as JSON.
-        // Read as text first to preserve the body in case JSON.parse fails.
         const textResponse = await response.text();
         try {
           const data = JSON.parse(textResponse);
@@ -68,8 +56,6 @@ const ManageRestaurant: React.FC = () => {
             throw new Error(data.error || 'API request was successful but operation failed');
           }
         } catch (jsonParseError) {
-          // This block will be hit if textResponse is HTML, causing JSON.parse to fail.
-          console.error("Failed to parse successful response as JSON:", jsonParseError);
           throw new Error(`Received an unexpected non-JSON response from the server. Content starts with: ${textResponse.substring(0, 150)}...`);
         }
       } catch (err) {
@@ -78,14 +64,13 @@ const ManageRestaurant: React.FC = () => {
         } else {
           setError('An unknown error occurred');
         }
-        console.error("Failed to fetch menu items:", err);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchMenuItems();
-  }, []); // Empty dependency array means this runs once on mount
+  }, []);
 
   const openModal = () => {
     setNewItemName('');
@@ -126,18 +111,15 @@ const handleAddItemSubmit = async (e: React.FormEvent) => {
       return;
     }
 
-    // Create a FormData object to send the file and other data
     const formData = new FormData();
     formData.append('name', newItemName);
     formData.append('description', newItemDescription);
     formData.append('price', newItemPrice);
-    formData.append('imageFile', newItemImageFile); // Append the actual file
+    formData.append('imageFile', newItemImageFile);
 
     try {
       const response = await fetch('/api/menu', {
         method: 'POST',
-        // DO NOT set 'Content-Type': 'application/json'.
-        // The browser will automatically set the correct 'multipart/form-data' header.
         body: formData,
       });
 
@@ -147,7 +129,6 @@ const handleAddItemSubmit = async (e: React.FormEvent) => {
         throw new Error(result.error || `HTTP error! status: ${response.status}`);
       }
 
-      // Optimistically add the new item returned from the API to our state
       setMenuItems(prevItems => [result.data, ...prevItems]);
       closeModal();
     } catch (err) {
@@ -156,7 +137,6 @@ const handleAddItemSubmit = async (e: React.FormEvent) => {
       } else {
         setModalError('An unknown error occurred while adding the item.');
       }
-      console.error("Failed to add menu item:", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -167,7 +147,7 @@ const handleAddItemSubmit = async (e: React.FormEvent) => {
       return;
     }
     setDeletingItemId(itemId);
-    setError(null); // Clear general errors
+    setError(null);
 
     try {
       const response = await fetch(`/api/menu/${itemId}`, {
@@ -187,15 +167,13 @@ const handleAddItemSubmit = async (e: React.FormEvent) => {
       } else {
         setError('An unknown error occurred while deleting the item.');
       }
-      console.error("Failed to delete menu item:", err);
     } finally {
       setDeletingItemId(null);
     }
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-50"> {/* Use h-full if parent controls height, or h-screen for viewport height */}
-      {/* Header Section - Non-scrollable */}
+    <div className="flex flex-col h-full bg-gray-50">
       <div className="px-8 pt-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-4xl font-extrabold text-gray-900">Manage Menu Items</h1>
@@ -208,8 +186,7 @@ const handleAddItemSubmit = async (e: React.FormEvent) => {
         </div>
       </div>
 
-      {/* Scrollable Content Section */}
-      <div className="px-8 pb-8 pt-2"> {/* Removed flex-grow and overflow-y-auto */}
+      <div className="px-8 pb-8 pt-2">
         {error && (
           <div className="text-center p-8 text-red-500 bg-red-100 border border-red-300 rounded-md">
             Error: {error}
@@ -217,7 +194,7 @@ const handleAddItemSubmit = async (e: React.FormEvent) => {
         )}
 
         {!error && isLoading && (
-          <ul className="space-y-4 max-h-[60vh] overflow-y-auto"> {/* Make only the list scrollable */}
+          <ul className="space-y-4 max-h-[60vh] overflow-y-auto">
             {[...Array(3)].map((_, index) => (
               <MenuItemSkeleton key={index} />
             ))}
@@ -231,7 +208,7 @@ const handleAddItemSubmit = async (e: React.FormEvent) => {
           )}
 
         {!error && !isLoading && menuItems.length > 0 && (
-            <ul className="space-y-4 max-h-[60vh] overflow-y-auto"> {/* Make only the list scrollable */}
+            <ul className="space-y-4 max-h-[70vh] overflow-y-auto">
               {menuItems.map((item) => (
                 <li key={item._id} className="bg-white shadow-lg rounded-lg p-6 border border-gray-200 flex flex-col">
                   <div className="flex-grow">
@@ -243,7 +220,6 @@ const handleAddItemSubmit = async (e: React.FormEvent) => {
                       <p className="text-lg font-bold text-green-600 md:text-xl whitespace-nowrap">Price: ₹{item.price.toFixed(2)}</p>
                     </div>
                   </div>
-                  {/* Date and Delete button row */}
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-xs text-gray-400 mt-auto pt-2 border-t border-gray-100">
                     <p>Added: {new Date(item.createdAt).toLocaleDateString()} | Updated: {new Date(item.updatedAt).toLocaleDateString()}</p>
                   
@@ -261,7 +237,6 @@ const handleAddItemSubmit = async (e: React.FormEvent) => {
         )}
       </div>
 
-      {/* Add Item Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg">
@@ -309,7 +284,7 @@ const handleAddItemSubmit = async (e: React.FormEvent) => {
                   id="itemImageFile"
                   accept="image/*"
                   onChange={handleImageChange}
-                  required // Make the file input required
+                  required
                   className="mt-1 block w-full px-3 py-2 border text-gray-300 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
                 {newItemImagePreview && (

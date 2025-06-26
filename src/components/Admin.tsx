@@ -1,4 +1,3 @@
-// src/components/AdminModule.tsx
 "use client"
 
 import React, { useState } from 'react';
@@ -13,7 +12,7 @@ const AdminModule: React.FC = () => {
   const { logout } = useAuth();
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50"> {/* Use h-screen here */}
+    <div className="flex flex-col h-screen bg-gray-50">
       <nav className="p-4 shadow-md flex-shrink-0">
         <div className="container mx-auto flex justify-between items-center">
           <h2 className="text-2xl font-bold text-[#ff5757]">Admin Panel</h2>
@@ -40,8 +39,7 @@ const AdminModule: React.FC = () => {
         </div>
       </nav>
 
-      {/* This container should fill the rest of the screen and not scroll */}
-      <div className="container mx-auto flex-1 flex flex-col overflow-y-auto"> {/* Use flex-1 and min-h-0 */}
+      <div className="container mx-auto flex-1 flex flex-col overflow-y-auto">
         {currentPage === 'dashboard' && <AdminDashboard />}
         {currentPage === 'manageRestaurant' && <ManageRestaurant />}
       </div>

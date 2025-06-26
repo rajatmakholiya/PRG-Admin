@@ -1,7 +1,6 @@
-// src/context/AuthContext.tsx
 "use client"
 
-import { simulateLoginApi } from '@/app/api/SimulateApi'; // Assuming SimulateApi.tsx is in app/api
+import { simulateLoginApi } from '@/app/api/SimulatedLogin';
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 type UserRole = 'restaurant' | 'admin' | null;
@@ -18,10 +17,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const STORAGE_KEY_LOGGED_IN = 'nextAuthLoggedIn';
 const STORAGE_KEY_USER_ROLE = 'nextAuthUserRole';
 const STORAGE_KEY_EXPIRY_TIME = 'nextAuthExpiryTime';
-const LOGIN_CACHE_DURATION_MS = 60 * 60 * 1000; // 60 minutes
+const LOGIN_CACHE_DURATION_MS = 60 * 60 * 1000;
 
 const getInitialAuthState = (): { isLoggedIn: boolean; userRole: UserRole } => {
-  if (typeof window === 'undefined') { // Prevent localStorage access during SSR/prerender
+  if (typeof window === 'undefined') {
     return { isLoggedIn: false, userRole: null };
   }
   try {
@@ -37,8 +36,8 @@ const getInitialAuthState = (): { isLoggedIn: boolean; userRole: UserRole } => {
       }
     }
   } catch (error) {
-    console.error("Error reading auth state from localStorage", error);
-  }
+    console.error('Error retrieving auth state from localStorage:', error);
+    }
 
   localStorage.removeItem(STORAGE_KEY_LOGGED_IN);
   localStorage.removeItem(STORAGE_KEY_USER_ROLE);
@@ -84,16 +83,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (storedExpiryTime) {
         const expiryTime = parseInt(storedExpiryTime, 10);
         if (Date.now() >= expiryTime) {
-          logout(); // Session expired
+          logout();
         }
       } else if (isLoggedIn) {
-        // If app state is loggedIn but localStorage is missing expiry, treat as invalid
         logout();
       }
     };
 
-    checkAuthStatus(); // Check on mount
-    const intervalId = setInterval(checkAuthStatus, 60 * 1000); // Check every minute
+    checkAuthStatus();
+    const intervalId = setInterval(checkAuthStatus, 60 * 1000);
 
     return () => clearInterval(intervalId);
   }, [isLoggedIn, logout]);

@@ -1,47 +1,52 @@
-import mongoose, { Document, Schema, Model } from 'mongoose';
-
+import mongoose, { Schema, Model, Connection, Document } from 'mongoose';
+import { IAddress, IUser } from './User'; 
 export interface IOrderItem {
-  productId: string;
+  productId: mongoose.Schema.Types.ObjectId;
+  name: string;
+  price: number;
   quantity: number;
-  priceAtPurchase: number;
 }
 
 export interface IOrder extends Document {
-  orderNumber: string;
-  customerEmail: string;
+  _id: string;
+  user: mongoose.Schema.Types.ObjectId | IUser;
   items: IOrderItem[];
   totalAmount: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  deliveryAddress: IAddress;
+  status: 'Pending' | 'Confirmed' | 'Out for Delivery' | 'Delivered' | 'Cancelled';
+  deliveryType: 'Immediate' | 'Scheduled';
+  scheduledAt?: Date;
   createdAt: Date;
   updatedAt: Date;
+  paymentMethod: string;
 }
 
 const OrderItemSchema: Schema<IOrderItem> = new Schema({
-  productId: { type: String, required: true },
-  quantity: { type: Number, required: true, min: 1 },
-  priceAtPurchase: { type: Number, required: true },
-}, {_id: false});
+  productId: { type: mongoose.Schema.Types.ObjectId, ref: 'MenuItem', required: true },
+  name: { type: String, required: true },
+  price: { type: Number, required: true },
+  quantity: { type: Number, required: true },
+}, { _id: false });
 
-export const OrderSchema: Schema<IOrder> = new Schema( // Export the schema
-  {
-    orderNumber: { type: String, required: true, unique: true, index: true },
-    customerEmail: { type: String, required: true, trim: true },
-    items: [OrderItemSchema],
-    totalAmount: { type: Number, required: true, min: 0 },
-    status: {
-      type: String,
-      enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
-      default: 'pending',
-    },
+const OrderSchema: Schema<IOrder> = new Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  items: { type: [OrderItemSchema], required: true },
+  totalAmount: { type: Number, required: true },
+  deliveryAddress: { type: Schema.Types.Mixed, required: true },
+  status: {
+    type: String,
+    enum: ['Pending', 'Confirmed', 'Out for Delivery', 'Delivered', 'Cancelled'],
+    default: 'Pending',
   },
-  {
-    timestamps: true,
-    collection: 'OrderList', // Explicitly set the collection name for orders
-  }
-);
+  deliveryType: {
+    type: String,
+    enum: ['Immediate', 'Scheduled'],
+    required: true,
+  },
+  paymentMethod: { type: String, required: true },
+  scheduledAt: { type: Date },
+}, { timestamps: true, collection: 'orders' });
 
-// Model compilation will be done in the API route using a specific connection
-// export default Order; // Remove default export of the model
-const OrderList: Model<IOrder> = mongoose.models.Order || mongoose.model<IOrder>('Order', OrderSchema);
-
-export default OrderList;
+export default function getOrderModel(connection: Connection): Model<IOrder> {
+  return connection.models.Order || connection.model<IOrder>('Order', OrderSchema);
+}

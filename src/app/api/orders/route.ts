@@ -3,7 +3,7 @@ import { getOrdersDbConnection } from '@/lib/mongodb';
 import getOrderModel from '@/models/Order';
 import { getUserModel } from '@/models/User';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const ordersConnection = await getOrdersDbConnection();
 
@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
         const order = await Order.create(body);
         return NextResponse.json({ success: true, data: order }, { status: 201 });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
         return NextResponse.json({ success: false, error: 'Server Error: ' + errorMessage }, { status: 500 });

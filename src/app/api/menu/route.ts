@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import { getMenuDbConnection } from '@/lib/mongodb';
 import { getMenuItemModel } from '@/models/MenuItem';
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const menuConnection = await getMenuDbConnection();
     const MenuItem = getMenuItemModel(menuConnection);

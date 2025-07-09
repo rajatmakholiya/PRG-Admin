@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import mongoose, { Connection } from 'mongoose';
 
 const MONGODB_MENU_URI = process.env.MONGODB_MENU_URI;

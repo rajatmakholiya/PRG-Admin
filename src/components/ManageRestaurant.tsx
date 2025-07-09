@@ -43,6 +43,7 @@ const ManageRestaurant: React.FC = () => {
             const errorData = JSON.parse(errorText);
             errorResponseMessage = errorData.error || errorResponseMessage;
           } catch (err) {
+            console.log(err)
           }
           throw new Error(errorResponseMessage);
         }
@@ -56,7 +57,7 @@ const ManageRestaurant: React.FC = () => {
             throw new Error(data.error || 'API request was successful but operation failed');
           }
         } catch (jsonParseError) {
-          throw new Error(`Received an unexpected non-JSON response from the server. Content starts with: ${textResponse.substring(0, 150)}...`);
+          throw new Error(`Received an unexpected non-JSON response from the server ${jsonParseError}. Content starts with: ${textResponse.substring(0, 150)}...`);
         }
       } catch (err) {
         if (err instanceof Error) {

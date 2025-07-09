@@ -15,7 +15,6 @@ const OrdersPage: React.FC = () => {
     const [statusFilter, setStatusFilter] = useState<'all' | IOrder['status']>('all');
     const [deliveryTypeFilter, setDeliveryTypeFilter] = useState<'all' | IOrder['deliveryType']>('all');
 
-
     useEffect(() => {
         const fetchOrders = async () => {
             try {
@@ -38,14 +37,13 @@ const OrdersPage: React.FC = () => {
         fetchOrders();
     }, []);
 
-
     useEffect(() => {
         const socket: Socket = io();
-        socket.on('connect', () => {});
+        socket.on('connect', () => { });
         socket.on('new-order', (newOrder: IOrder) => {
             setOrders((prevOrders) => [newOrder, ...prevOrders]);
         });
-        socket.on('disconnect', () => {});
+        socket.on('disconnect', () => { });
         return () => {
             socket.disconnect();
         };
@@ -58,13 +56,11 @@ const OrdersPage: React.FC = () => {
             return statusMatch && deliveryTypeMatch;
         });
     }, [orders, statusFilter, deliveryTypeFilter]);
-
-
     const handleStatusChange = (orderId: string, newStatus: IOrder['status']) => {
-        // @ts-expect-error: Ignore type error due to possible Mongoose document properties
+// @ts-expect-error: Ignore type error due to possible Mongoose document properties
         setOrders((prevOrders) =>
             prevOrders.map((order) =>
-            order._id === orderId ? { ...order, status: newStatus } : order
+                order._id === orderId ? { ...order, status: newStatus } : order
             )
         );
     };
@@ -107,7 +103,7 @@ const OrdersPage: React.FC = () => {
                         </select>
                     </div>
                     <div className='flex flex-row gap-2 items-center w-auto'>
-                        <label htmlFor="delivery-type-filter " className="block text-sm font-medium text-gray-700">
+                        <label htmlFor="delivery-type-filter" className="block text-sm font-medium text-gray-700">
                             Delivery
                         </label>
                         <select
@@ -156,13 +152,13 @@ const OrdersPage: React.FC = () => {
                                             {order.items.map((item: IOrderItem, index: number) => (
                                                 <li key={index} className="flex justify-between">
                                                     <span>{item.name} <span className="font-semibold">x{item.quantity}</span></span>
-                                                    <span>鈧�{(item.price * item.quantity).toFixed(2)}</span>
+                                                    <span>₹{(item.price * item.quantity).toFixed(2)}</span>
                                                 </li>
                                             ))}
                                         </ul>
                                         <div className="border-t mt-2 pt-2 flex justify-between font-bold text-gray-800">
                                             <span>Total</span>
-                                            <span>鈧�{order.totalAmount.toFixed(2)}</span>
+                                            <span>₹{order.totalAmount.toFixed(2)}</span>
                                         </div>
                                     </div>
 
@@ -180,7 +176,13 @@ const OrdersPage: React.FC = () => {
                                         <div className="flex justify-between items-center mb-3 text-sm">
                                             <span className='font-semibold'>Delivery:</span>
                                             <span className='flex items-center'>
-                                                <span className='ml-1'>{order.deliveryType === 'Immediate' ? `鈿mmediate` : ` ${order.scheduledAt ? `馃晵 ${moment(order.scheduledAt).format('MMM D, h:mm A')}` : ' '}`}</span>
+                                                <span className='ml-1'>
+                                                    {order.deliveryType === 'Immediate'
+                                                        ? '🚀 Immediate'
+                                                        : order.scheduledAt
+                                                            ? `📅 ${moment(order.scheduledAt).format('MMM D, h:mm A')}`
+                                                            : ''}
+                                                </span>
                                             </span>
                                         </div>
                                         <select
